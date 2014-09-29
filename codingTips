@@ -1,0 +1,2088 @@
+
+*array list和linked list可以使用add(index,element)来将元素插入指定的位置且将其他元素往右平移
+
+pre-order 头左右
+in-order 左到右
+post-order 左右头
+
+
+1.Given an input string, reverse the string word by word. (easy to miss corner case)
+
+public class Solution {
+    public String reverseWords(String s) {
+        s=s.trim();
+        if(s.equals(""))
+            return "";
+        
+        String[] storedArrays = s.split(" ");
+        
+        String output="";
+        for(int index = storedArrays.length-1;index>0;index--){
+            if(storedArrays[index].equals(""))
+                continue;
+            storedArrays[index]=storedArrays[index].trim();
+            output+=storedArrays[index]+" ";
+        }
+        output+=storedArrays[0].trim();
+        return output.substring(0,output.length());
+    }
+}
+——————————
+2.Evaluate Reverse Polish Notation
+
+public class Solution {
+    public int evalRPN(String[] tokens) {
+        Stack<String> tempStorage = new Stack<String>();
+        for(int index=0;index<tokens.length;index++){
+            if(tokens[index].equals("+")||tokens[index].equals("-")||tokens[index].equals("*")||tokens[index].equals("/")){
+                int n1 = Integer.parseInt(tempStorage.pop());
+                int n2 = Integer.parseInt(tempStorage.pop());
+                if(tokens[index].equals("+"))
+                    tempStorage.push(((n1+n2)+""));
+                else if(tokens[index].equals("-"))
+                    tempStorage.push(((n2-n1)+""));
+                else if(tokens[index].equals("*"))
+                    tempStorage.push(((n1*n2)+""));
+                else if(tokens[index].equals("/"))
+                    tempStorage.push(((n2/n1)+""));
+            }
+            else
+                tempStorage.push(tokens[index]);
+        }
+        return Integer.parseInt(tempStorage.pop());
+    }
+}
+——————————
+3. Given n points on a 2D plane, find the maximum number of points that lie on the same straight line.
+
+/**
+ * Definition for a point.
+ * class Point {
+ *     int x;
+ *     int y;
+ *     Point() { x = 0; y = 0; }
+ *     Point(int a, int b) { x = a; y = b; }
+ * }
+ */
+public class Solution {
+    public int maxPoints(Point[] points) {
+        double k = 0;
+        int maxNum = 0;
+                    
+        if(points.length<=1)
+            return points.length;
+        
+        HashMap<Double,Integer> map = new HashMap<Double,Integer>();
+        for(int i = 0; i<points.length;i++){
+            int countSame = 0;
+            map.clear();
+            for(int j=0; j<points.length;j++){
+                if(i==j)
+                    continue;
+                    
+                if(points[i].x==points[j].x && points[i].y == points[j].y)
+                    countSame++;
+                else{
+                    if(points[i].x==points[j].x)
+                        k = Double.MAX_VALUE;
+                    else
+                        k = (double)(points[i].y-points[j].y)/(points[i].x-points[j].x);
+                    
+                    if(!map.containsKey(k))
+                        map.put(k,1);
+                    else
+                        map.put(k,map.get(k)+1);
+                }
+            }
+            if(map.size()==0)
+                maxNum = countSame + 1;
+            else
+                for(Integer elem: map.values()){
+                    maxNum = Math.max(elem+countSame+1,maxNum);
+                }
+        }
+        return maxNum;
+    }
+}
+—————————————
+
+4.Minimum Window Substring 
+
+public class Solution {
+    public String minWindow(String S, String T) {
+        int minLen= Integer.MAX_VALUE;
+        if(T.length()==0)
+            return "";
+        if(T.length()==1 && T.equals(S))
+            return T;
+        
+        int p1=0;
+        int p2 =0;
+        HashMap<Character,Integer> refer = new HashMap<Character,Integer>();
+        HashMap<Character,Integer> modify = new HashMap<Character,Integer>();
+        
+        for(int i=0;i<T.length();i++){
+            if(refer.containsKey(T.charAt(i)))
+                refer.put(T.charAt(i),refer.get(T.charAt(i))+1);
+            else
+                refer.put(T.charAt(i),1);
+        }
+        
+        int found =0;
+        int minP1 = 0;
+        int minP2 = 0;
+        for(int i=0;i<S.length();i++){
+            if(refer.containsKey(S.charAt(i)))
+            {
+                    if(!modify.containsKey(S.charAt(i)))
+                        modify.put(S.charAt(i),1);
+                    else
+                        modify.put(S.charAt(i),modify.get(S.charAt(i))+1);
+                    p2 = i;
+                    if(refer.get(S.charAt(i))>=modify.get(S.charAt(i)))
+                        found++;
+                
+                
+                if(found == T.length()){
+                    for(int j = p1; j<=p2;j++){
+                        if(!refer.containsKey(S.charAt(j)) || refer.get(S.charAt(j))<modify.get(S.charAt(j))){
+                            p1++;
+                            if(refer.containsKey(S.charAt(j)))
+                                modify.put(S.charAt(j),modify.get(S.charAt(j))-1);
+                        }
+                        else
+                            break;
+                    }
+                    if(minLen>p2-p1+1){
+                        minP1 = p1;
+                        minP2 = p2;
+                        minLen = p2-p1+1;
+                    }
+                    found--;
+                    modify.put(S.charAt(p1),modify.get(S.charAt(p1))-1);
+                    p1++;
+                }
+            
+            }
+        }
+        if(minLen==Integer.MAX_VALUE)
+            return "";
+        else
+            return S.substring(minP1,minP2+1);
+    }
+}
+——————————
+注：list的排序还可以用指针对换指向来进行swap
+
+Given a collection of intervals, merge all overlapping intervals
+
+/**
+ * Definition for an interval.
+ * public class Interval {
+ *     int start;
+ *     int end;
+ *     Interval() { start = 0; end = 0; }
+ *     Interval(int s, int e) { start = s; end = e; }
+ * }
+ */
+public class Solution {
+    public List<Interval> merge(List<Interval> intervals) {
+        List<Interval> result = new ArrayList<Interval>();
+        if(intervals.size()<=1)
+            return intervals;
+        //1
+        Collections.sort(intervals,new intervalComparator());
+        
+        int front = intervals.get(0).start;
+        int border = intervals.get(0).end;
+        for(int i=1;i<intervals.size();i++){
+            if(border>=intervals.get(i).start){
+                if(border<intervals.get(i).end)
+                    border = intervals.get(i).end;
+            }
+            else{
+                result.add(new Interval(front,border));
+                front = intervals.get(i).start;
+                border = intervals.get(i).end;
+            }
+        }
+        result.add(new Interval(front,border));
+        return result;
+    }
+    
+    class intervalComparator implements Comparator<Interval>{
+        public int compare(Interval i1, Interval i2){
+            return i1.start - i2.start;
+        }
+    }
+}
+
+如果是在已排序的list里插入一个interval的话
+/**
+ * Definition for an interval.
+ * public class Interval {
+ *     int start;
+ *     int end;
+ *     Interval() { start = 0; end = 0; }
+ *     Interval(int s, int e) { start = s; end = e; }
+ * }
+ */
+public class Solution {
+    public List<Interval> insert(List<Interval> intervals, Interval newInterval) {
+        List<Interval> result = new ArrayList<Interval>();
+        if(intervals.size()==0){
+            result.add(newInterval);
+            return result;
+        }
+        
+        for(int i=0;i<intervals.size();i++){
+            Interval temp = intervals.get(i);
+            if(temp.end<newInterval.start)
+                result.add(temp);
+            else if(temp.start>newInterval.end){
+                result.add(newInterval);
+                newInterval = temp;
+            }
+            else{
+                newInterval = new Interval(Math.min(newInterval.start,temp.start),
+                Math.max(newInterval.end,temp.end));
+            }
+        }
+        result.add(newInterval);
+        
+        return result;
+    }
+}
+
+—————————
+N-Queens 
+*皇后问题如何避免出现重复的情况！！！
+
+public class Solution {
+    
+    public List<String[]> solveNQueens(int n) {
+        List<String[]> result = new ArrayList<String[]>();
+        String[] temp = new String[n];
+        int level = 0;
+        //index is row, value is col
+        int[] check = new int[n];
+        findQueens(level, check, temp, result);
+        return result;
+    }
+    
+    public void findQueens(int level,int[] check, String[] temp, List<String[]> result){
+        if(level==check.length){
+        	//pretty important to copy the array!!!
+        	String[] copy = temp.clone();
+        	
+            result.add(copy);
+            return;
+        }
+        for(int i=0;i<check.length;i++){
+            check[level]=i;
+            if(judge(level,check)){
+                temp[level] = "";
+                for(int j=0;j<check.length;j++){
+                    if(j==i)
+                        temp[level]=temp[level]+"Q";
+                    else 
+                        temp[level]=temp[level]+".";
+                }
+                //System.out.println(temp[level]);
+                findQueens(level+1,check,temp,result);
+            }
+        }   
+       
+    }
+    
+    public boolean judge(int level,int[] check){
+        for(int i=0;i<level;i++){
+            if(check[i]==check[level] || Math.abs(check[i]-check[level])==level-i)
+                return false;
+        }
+        return true;
+    }
+}
+———————————
+Best Time to Buy and Sell Stock:
+
+public class Solution {
+    public int maxProfit(int[] prices) {
+        if(prices.length<=1)
+            return 0;
+            
+        int minLoc= 0;
+        int maxLoc= 0;
+        int profit = 0;
+        for(int i=1;i<prices.length;i++){
+            if(prices[minLoc]>prices[i])
+                minLoc= i;
+            if(prices[i]>prices[minLoc])
+                maxLoc= i;
+            if(maxLoc>minLoc)
+                profit = Math.max(profit,prices[maxLoc]-prices[minLoc]);
+        }
+        return profit;
+    }
+}
+
+
+—————————
+*动态规划保存递归时的结果，因而不会在解决同样的问题时花费时间
+
+方法1 递归：
+public class Solution {
+    public int uniquePathsWithObstacles(int[][] obstacleGrid) {
+        int row = obstacleGrid.length-1;
+        int col = obstacleGrid[0].length-1;
+        return getRoutes(row,col,obstacleGrid);
+        
+    }
+    public int getRoutes(int row, int col, int[][] obstacleGrid){
+        int numRoutes = 0;
+        if(row==0 && col==0)
+            return 1;
+            
+        if(row>0 && obstacleGrid[row-1][col]==0)
+            numRoutes += getRoutes(row-1,col,obstacleGrid);
+        if(col>0 && obstacleGrid[row][col-1]==0)
+            numRoutes += getRoutes(row,col-1,obstacleGrid);
+        return numRoutes;
+    }
+}
+方法2 DP：
+public class Solution {
+    public int uniquePathsWithObstacles(int[][] obstacleGrid) {
+        int row = obstacleGrid.length;
+        int col = obstacleGrid[0].length;
+        if(row==1 && col==1 && obstacleGrid[0][0]==1)
+            return 0;
+        int[] store = new int[col];//int array will be initialized as 0
+        store[0] = 1;
+        for(int i=0; i<row;i++){
+            for(int j=0;j<col;j++){
+                if(obstacleGrid[i][j]==1)
+                    store[j]=0;
+                else if(j>0)
+                    store[j]=store[j-1]+store[j];
+            }
+        }
+        return store[col-1];
+    }
+}
+—————————
+Maximal Rectangle
+优化就是先预处理成保存成，当前点向上都是1的最高的高度，就变成每一行都是一个直方图，
+之后用O（n）的直方图求最大面积去算
+
+
+public class Solution {
+    public int maximalRectangle(char[][] matrix) {
+        int row = matrix.length;
+        int col = matrix[0].length;
+        int[][] lenStore = new int[row][col];
+        for (int c=0; c<col;c++){
+            for(int r=0; r<row; r++){
+                int count=0;
+                int temp=r;
+                if(temp==0 && matrix[temp][c]==1)
+                    count++;
+                while(temp>0 && matrix[temp][c]==1){
+                    count++;
+                    temp--;
+                }
+                lenStore[r][c] = count;
+            }
+        }
+        
+        int maxArea = 0;
+        for(int r=0; r<row; r++){
+            Stack<Integer> stack = new Stack<Integer>();
+            for(int c=0; c<col; c++){
+                if(c==0){
+                    stack.push(c);
+                }
+                else{
+                    while(!stack.empty() && lenStore[r][c] > lenStore[r][stack.peek()]){
+                        int temp = stack.pop();
+                        maxArea = Math.max(maxArea,(c-temp)*lenStore[r][temp]);
+                    }
+                    if(stack.empty()){
+                        maxArea = Math.max(maxArea,(c+1)*lenStore[r][c]);
+                    }
+                    stack.push(c);
+                }
+            }
+        }
+        
+        return maxArea;
+    }
+}
+
+____________________________
+Swap Nodes in Pairs 
+
+public class Solution {
+    public ListNode swapPairs(ListNode head) {
+        if(head == null || head.next==null){
+            return head;
+        }
+        ListNode nextPair = head.next.next;
+        ListNode newHead = head.next;
+        newHead.next = head;
+        head.next = swapPairs(nextPair);
+        
+        return newHead;
+    }
+}
+
+_________________________
+Set Matrix Zeroes
+不用mn和m+n的space复杂度，而用constant complexity的话：
+
+public class Solution {
+    public void setZeroes(int[][] matrix) {
+        int row = matrix.length;
+        int col = matrix[0].length;
+        boolean row0has = false;
+        boolean col0has = false;
+        for(int r=0;r<row;r++)
+            if(matrix[r][0]==0)
+                col0has = true;
+        for(int c=0;c<col;c++)
+            if(matrix[0][c]==0)
+                row0has = true;
+        for(int r=1;r<row;r++)
+            for(int c=1;c<col;c++)
+                if(matrix[r][c]==0){
+                    matrix[0][c]=0;
+                    matrix[r][0]=0;
+                }
+        for(int r=1;r<row;r++)
+            for(int c=1;c<col;c++)
+                if(matrix[r][0]==0 || matrix[0][c]==0)
+                    matrix[r][c]=0;
+        if(row0has)
+            for(int c=0;c<col;c++)
+                matrix[0][c]=0;
+        if(col0has)
+            for(int r=0;r<row;r++)
+                matrix[r][0]=0;
+            
+    }
+}
+
+________________
+Maximum Depth of Binary Tree
+/**
+ * Definition for binary tree
+ * public class TreeNode {
+ *     int val;
+ *     TreeNode left;
+ *     TreeNode right;
+ *     TreeNode(int x) { val = x; }
+ * }
+ */
+public class Solution {
+    public int maxDepth(TreeNode root) {
+        if(root == null)
+            return 0;
+        return 1 + Math.max(maxDepth(root.left),maxDepth(root.right));
+    }
+}
+
+_________________
+Reverse Interger
+要考虑正负和防止overflow
+public class Solution {
+    public int reverse(int x) {
+        int temp = Math.abs(x);
+        int bits = 0;
+        while(Math.pow(10,bits)<=temp)
+            bits++;
+            
+        int result=0;
+        while(temp!=0){
+            result = result*10 + temp%10;
+            temp = temp/10;
+        }
+        if(x>=0)
+            return result;
+        else
+            return result*(-1);
+    }
+}
+
+_____________________
+Remove Nth Node From End of List 
+在一定满足n的条件下，注意要分开处理只有一个元素和starter恰好走完真个list的情况
+
+/**
+ * Definition for singly-linked list.
+ * public class ListNode {
+ *     int val;
+ *     ListNode next;
+ *     ListNode(int x) {
+ *         val = x;
+ *         next = null;
+ *     }
+ * }
+ */
+public class Solution {
+    public ListNode removeNthFromEnd(ListNode head, int n) {
+        if(head.next==null)
+            return null;
+        ListNode follower = head;
+        ListNode starter = head;
+        for(int i=0; i<n;i++){
+            starter = starter.next;
+        }
+        if(starter==null)
+            head = head.next;
+        else{
+        while(starter.next!=null){
+            starter = starter.next;
+            follower = follower.next;
+        }
+        follower.next = follower.next.next;
+        }
+        return head;
+    }
+}
+
+______________________________
+Valid Number 
+思路：先用e来split整个字符串，然后再允许左边出现单个的‘.’,右边（如果有右边的话）不能出现.  再考虑一些corner cases。
+
+public class Solution {
+    public boolean isNumber(String s) {
+        String t = s.trim();
+        if(t.equals("")||(t.length()>0 && t.charAt(t.length()-1)=='e'))
+            return false;
+        String[] array = t.split("e");
+        if(array.length==0 || array.length>2)
+            return false;
+        String a1 = array[0];
+        boolean b1 = valid(a1,false);
+        if(array.length>1)
+            b1 = b1 && valid(array[1],true);
+        return b1;                
+    }
+    public boolean valid(String str, boolean bit){
+        if(str.length()==0)
+            return false;
+        if(str.length()==1 && !(str.charAt(0)>='0' && str.charAt(0)<='9'))
+            return false;
+        if(str.charAt(0)=='-'||str.charAt(0)=='+')
+            str = str.substring(1);
+        char[] store = str.toCharArray();
+        if(store.length==1 && store[0]=='.')
+            return false;
+        for(int i=0; i<store.length;i++){
+            if(store[i]=='.')
+                if(bit)
+                    return false;
+                else
+                    bit = true;
+            else if(!(store[i]>='0' && store[i]<='9'))
+                return false;
+        }
+        return true;
+    }
+}
+
+___________________________
+NextPermutation
+不要忘记加break
+
+public class Solution {
+    public void nextPermutation(int[] num) {
+        for(int i=num.length-1; i>0; i--){
+            if(num[i]>num[i-1]){
+                for(int temp= num.length-1;temp>=i;temp--){
+                    if(num[i-1]<num[temp]){
+                        int swap = num[temp];
+                        num[temp] = num[i-1];
+                        num[i-1] = swap;
+                        //don't forget to add break!!
+                        break;
+                    }
+                }
+                int start = i;
+                int end = num.length-1;
+                while(start<=end){
+                    int swap = num[start];
+                    num[start] = num[end];
+                    num[end] = swap;
+                    start++;
+                    end--;
+                }
+                return;
+            }
+        }
+        int start = 0;
+        int end = num.length-1;
+        while(start<=end){
+            int swap = num[start];
+            num[start] = num[end];
+            num[end] = swap;
+            start++;
+            end--;
+        }
+        return;
+    }
+}
+
+______________________
+String to Integer(atoi)
+注意可以用一个double来handle溢出的情况，返回时不要忘记parse回int类型
+
+public class Solution {
+    public int atoi(String str) {
+        String copy = str.trim();
+        if(copy.equals(""))
+            return 0;
+        boolean pos = true;
+        if(copy.charAt(0)=='+' || copy.charAt(0)=='-'){
+            if(copy.charAt(0)=='-' && copy.charAt(1)!='+'){
+                pos = false;
+                copy = copy.substring(1);
+            }
+            else if((copy.charAt(0)=='-' && copy.charAt(1)=='+')||(copy.charAt(0)=='+' && copy.charAt(1)=='-')){
+                copy = copy.substring(3);
+            }
+            else{
+                copy = copy.substring(1);
+            }
+        }
+        char[] array = copy.toCharArray();
+        double result = 0;
+        for(int i=0;i<array.length;i++){
+            if(!(array[i]>='0' && array[i]<='9'))
+                break;
+            result = result*10 + (array[i]-'0');
+        }
+        if(pos){
+            if(result>Integer.MAX_VALUE)
+                return Integer.MAX_VALUE;
+            return (int)result;
+        }
+        else{
+            if((-1)*result<Integer.MIN_VALUE)
+                return Integer.MIN_VALUE;
+            return (int)((-1)*result);
+        }
+    }
+}
+
+____________________________
+Permutation
+注意：list类型不能直接被add因为会变化，需要clone或者构造函数；另外i++不能直接作为传入参数因为只会传i
+
+**如果元素有重复的话需要在ifcheck里加一句：
+if(i>0 && num[i-1]==num[i] && check[i-1]==false)
+	continue;
+
+public class Solution {
+    public List<List<Integer>> permute(int[] num) {
+        List<List<Integer>> result = new ArrayList<List<Integer>>();
+        List<Integer> solution = new ArrayList<Integer>();
+        if(num.length==0)
+            return result;
+        boolean[] visited = new boolean[num.length];
+        recurPermute(num,0,visited,solution,result);
+        return result;
+    }
+    public void recurPermute(int[] num, int round, boolean[] visited, List<Integer> solution, List<List<Integer>> result){
+        if(round==num.length){
+            List<Integer> copy = new ArrayList<Integer>(solution);
+            result.add(copy);
+            return;
+        }
+        for(int i=0; i<num.length; i++){
+            if(!visited[i]){
+                visited[i]=true;
+                solution.add(num[i]);
+                round++;
+                recurPermute(num,round,visited,solution,result);
+                round--;
+                solution.remove(solution.size()-1);
+                visited[i]=false;
+            }
+        }
+    }
+}
+
+_____________________________
+Path Sum2
+
+public class Solution {
+    public List<List<Integer>> pathSum(TreeNode root, int sum) {
+        List<List<Integer>> result = new ArrayList<List<Integer>>();
+        if(root==null)
+            return result;
+        List<Integer> solution = new ArrayList<Integer>();
+        findPath(root,sum,solution,result);
+        return result;
+    }
+    public void findPath(TreeNode node, int remain, List<Integer> solution, List<List<Integer>> result){
+        if(node.left==null&&node.right==null){
+            if(remain-node.val==0){
+                //copy or not?
+                solution.add(node.val);
+                List<Integer> copy = new ArrayList<Integer>(solution);
+                result.add(copy);
+                solution.remove(solution.size()-1);
+            }
+            return;  
+        }
+        solution.add(node.val);
+        if(node.left!=null)
+            findPath(node.left,remain-node.val,solution,result);
+        if(node.right!=null)
+            findPath(node.right,remain-node.val,solution,result);
+        solution.remove(solution.size()-1);
+    }
+}
+
+
+___________________________
+Word Break
+
+递归解法： 缺点是面对s=“aaaaaaaaaaa” set = [“a”，”aaaaaaaaaa”]会比较慢甚至超时 
+public class Solution {
+    public boolean wordBreak(String s, Set<String> dict) {
+        if(s.equals(""))
+            return true;
+        boolean result = false;
+        String str = "";
+        for(String elem: dict){
+            if(s.indexOf(elem)>=0){
+                str = s.substring(0,s.indexOf(elem)) + s.substring(s.indexOf(elem)+elem.length());
+                result = wordBreak(str,dict);
+                if(result)
+                    return true;
+            }
+        }
+        return result;
+    }
+}
+
+动态规划解法：
+public class Solution {
+    public boolean wordBreak(String s, Set<String> dict) {
+        if(s.equals(""))
+            return true;
+        //pretty important
+        s=" "+s;
+        boolean[] scan = new boolean[s.length()];
+        scan[0] = true;
+        for(int i=1;i<s.length();i++){
+            for(int j=0;j<i;j++){
+                scan[i] = scan[j] && dict.contains(s.substring(j+1,i+1));
+                if(scan[i])
+                    break;
+            }
+        }
+                
+        return scan[scan.length-1];
+    }
+}
+
+
+Word Break 2
+递归方法：超时
+
+public class Solution {
+    public List<String> wordBreak(String s, Set<String> dict) {
+        List<String> result = new ArrayList<String>();
+        if(s.length()==0)
+            return result;
+        String solution = "";
+        findSolution(s,0,solution,dict);        
+        return result;
+    }
+    public void findSolution(String s, int round, String solution, Set<String> dict){
+        if(round==s.length()){
+            dict.add(solution);
+            return;
+        }
+        String temp="";
+        for(int i=0;i<s.length();i++){
+            temp+=s.charAt(i);
+            if(dict.contains(temp)){
+                if(solution.length()!=0)
+                    findSolution(s,round+1,solution+" "+temp,dict);
+                else
+                    findSolution(s,round+1,temp,dict);
+            }
+        }
+    }
+}
+
+不超时的方法  加一个标志数组来节省运算量 有点像斐波那契数列的用一个数组来存已计算数据
+public class Solution {
+    public List<String> wordBreak(String s, Set<String> dict) {
+        List<String> result = new ArrayList<String>();
+        if(s.length()==0)
+            return result;
+        boolean[] possible = new boolean[s.length()];
+        for(int i=0;i<possible.length;i++)
+            possible[i] = true;
+        String solution = "";
+        findSolution(s,0,solution,dict,result,possible);        
+        return result;
+    }
+    public void findSolution(String s, int round, String solution, Set<String> dict,List<String> result, boolean[] possible){
+        if(round==s.length()){
+            result.add(solution);
+            return;
+        }
+        String temp="";
+        for(int i=round;i<s.length();i++){
+            temp+=s.charAt(i);
+            if(dict.contains(temp)&&possible[i]){
+                int sizeBefore = result.size();
+                if(solution.length()!=0)
+                    findSolution(s,i+1,solution+" "+temp,dict,result, possible);
+                else
+                    findSolution(s,i+1,temp,dict,result,possible);
+                if(result.size()==sizeBefore)
+                    possible[i] = false;
+            }
+        }
+    }
+}
+
+
+____________________
+Permutation Sequence
+递归法：会超时
+public class Solution {
+    public String getPermutation(int n, int k) {
+        List<String> result = new ArrayList<String>();
+        boolean[] check = new boolean[n+1];
+        permute(n,k,"",result,check,0,0);
+        return result.get(0);
+    }
+    public int permute(int n,int k,String solution,List<String> result,boolean[] check, int size, int count){
+        if(size==n){
+            count++;
+            if(count==k)
+                result.add(solution);
+            return count;
+        }
+        for(int i=1;i<=n;i++){
+            if(!check[i]){
+                check[i] = true;
+                solution = solution+i;
+                count = permute(n,k,solution,result,check,size+1,count);
+                if(result.size()>0)
+                    return count;
+                solution = solution.substring(0,solution.length()-1);
+                check[i] = false;
+            }
+        }
+        return count;
+    }
+}
+
+先用数学推出规律再写码  注意两个int相除想取double的话要把其中一个int转换为double
+
+public class Solution {
+    public String getPermutation(int n, int k) {
+        if(n==1 && k==1)
+            return "1";
+        String list = "";
+        for(int i=1;i<=n;i++)
+            list += i;
+        return findSolution(list,k,"");
+    }
+    public String findSolution(String list,int k,String solution){
+        while(list.length()!=0){
+        int fact = 1;
+        for(int i=1;i<list.length();i++){
+            fact *= i;
+        }
+        double bitValue = (double)k/fact;
+        for(int i=0;i<list.length();i++){
+            if(bitValue>i && bitValue<=i+1){
+                solution += list.charAt(i);
+                list = list.substring(0,i)+list.substring(i+1);
+                k=k-fact*i;
+                break;
+            }
+        }
+        }
+        return solution;
+    }
+}
+
+
+_______________________
+Subsets II
+递增且避免重复
+
+public class Solution {
+    public List<List<Integer>> subsetsWithDup(int[] num) {
+        List<List<Integer>> result = new ArrayList<List<Integer>>();
+        List<Integer> solution = new ArrayList<Integer>();
+        result.add(solution);
+        if(num.length==0)
+            return result;
+        Arrays.sort(num);
+        findSolution(0,num,solution,result);
+        
+        return result;
+    }
+    public void findSolution(int start, int[] num, List<Integer> solution, List<List<Integer>> result){
+        for(int i=start;i<num.length;i++){
+            solution.add(num[i]);
+            List<Integer> copy = new ArrayList<Integer>(solution);
+            result.add(copy);
+            if(i<num.length-1)
+                findSolution(i+1,num,solution,result);
+            solution.remove(solution.size()-1);
+            while(i<num.length-1 && num[i+1]==num[i])
+                i++;
+        }
+    }
+}
+
+
+__________________
+Palindrome Partitioning  (加list里加list要把里面的list拷贝一份)
+
+public class Solution {
+    public List<List<String>> partition(String s) {
+        List<List<String>> result = new ArrayList<List<String>>();
+        List<String> solution = new ArrayList<String>();
+        if(s.length()==0){
+            solution.add("");
+            result.add(solution);
+            return result;
+        }
+        findSolution(s,result,solution,0);
+        return result;
+    }
+    public void findSolution(String s, List<List<String>> result, List<String> solution, int start){
+        if(start == s.length()){
+            List<String> copy = new ArrayList<String>(solution);
+            result.add(copy);
+            return;
+        }
+        for(int i=start; i<s.length();i++){
+            if(palindrome(s.substring(start,i+1))){
+                solution.add(s.substring(start,i+1));
+                findSolution(s,result,solution,i+1);
+                solution.remove(solution.size()-1);
+            }
+        }
+    }
+    public boolean palindrome(String str){
+        if(str.length()<=1)
+            return true;
+        return str.charAt(0)==str.charAt(str.length()-1) && palindrome(str.substring(1,str.length()-1));
+    }
+}
+
+
+_____________________
+Regular Expression Matching 
+
+public class Solution {
+    public boolean isMatch(String s, String p) {
+        if(p.length()==0)
+            return s.length()==0;
+        if(p.length()==1 || p.charAt(1)!='*'){
+            if(s.length()<1 || (p.charAt(0)!='.' && p.charAt(0)!=s.charAt(0)))
+                return false;
+            return isMatch(s.substring(1),p.substring(1));
+        }
+        else{
+            int i=-1;
+            //i<0 can solve the case that "aab","c*a*b"
+            while(i<s.length() && (i<0 || p.charAt(0)=='.' || p.charAt(0)==s.charAt(i))){
+                if(isMatch(s.substring(i+1),p.substring(2)))
+                    return true;
+                i++;
+            }
+            return false;
+        }
+    }
+}
+
+________________________
+Surrounded Regions
+
+经验之谈：使用BFS为省空间可以使用while和一个递增的count，使用DFS可以使用一个Stack
+直观且巧妙的方法是DFS  缺陷是用了递归不能通过大数据量否则stackoverflow
+public class Solution {
+    int height = 0;
+    int width = 0;
+    char[][] board;
+    public void solve(char[][] board) {
+        if(board.length==0)
+            return;
+        this.board = board;
+        height = board.length;
+        width = board[0].length;
+        for(int i=0;i<height;i++){
+            dfs(i,0);
+            dfs(i,width-1);
+        }
+        for(int i=0;i<width;i++){
+            dfs(0,i);
+            dfs(height-1,i);
+        }
+        for(int m=0;m<height;m++)
+            for(int n=0;n<width;n++){
+                if(board[m][n]=='O')
+                    board[m][n]='X';
+                if(board[m][n]=='D')
+                    board[m][n]='O';
+            }
+            
+    }
+    public void dfs(int row, int col){
+        if(row<0 || row>=height || col<0 || col>=width || board[row][col]!='O')
+            return;
+        board[row][col] = 'D';
+        dfs(row+1,col);
+        dfs(row-1,col);
+        dfs(row,col+1);
+        dfs(row,col-1);
+    }
+}
+
+叼炸天的BFS算法：没有使用递归，使用while来作BFS
+public class Solution {
+    public void solve(char[][] board) {
+        if(board.length==0)
+            return;
+        int height = board.length;
+        int width = board[0].length;
+        List<Integer> yStore = new ArrayList<Integer>();
+        List<Integer> xStore = new ArrayList<Integer>();
+        for(int i=0;i<height;i++){
+            if(board[i][0]=='O'){
+                yStore.add(i);
+                xStore.add(0);
+            }
+            if(board[i][width-1]=='O'){
+                yStore.add(i);
+                xStore.add(width-1);
+            }
+        }
+        for(int i=0;i<width;i++){
+            if(board[0][i]=='O'){
+                yStore.add(0);
+                xStore.add(i);
+            }
+            if(board[height-1][i]=='O'){
+                yStore.add(height-1);
+                xStore.add(i);
+            }
+        }
+        int count = 0;
+        while(count<yStore.size()){
+            int y = yStore.get(count);
+            int x = xStore.get(count);
+            board[y][x] = 'F';
+            if(y>0 && board[y-1][x]=='O'){yStore.add(y-1);xStore.add(x);}
+            if(y<height-1 && board[y+1][x]=='O'){yStore.add(y+1);xStore.add(x);}
+            if(x>0 && board[y][x-1]=='O'){yStore.add(y);xStore.add(x-1);}
+            if(x<width-1 && board[y][x+1]=='O'){yStore.add(y);xStore.add(x+1);}
+            count++;
+        }
+        for(int r=0;r<height;r++)
+            for(int c=0;c<width;c++){
+                if(board[r][c]=='O')
+                    board[r][c] = 'X';
+                else if(board[r][c]=='F')
+                    board[r][c] = 'O';
+            }
+    }
+    
+}
+
+
+___________________
+3sum
+常规递归解法：数组很长时会超时
+public class Solution {
+    public List<List<Integer>> threeSum(int[] num) {
+        List<List<Integer>> result = new ArrayList<List<Integer>>();
+        List<Integer> solution = new ArrayList<Integer>();
+        if(num.length==0){
+            return result;
+        }
+        findSolution(num,solution,result,0,0);
+        return result;
+    }
+    public void findSolution(int[] num,List<Integer> solution,List<List<Integer>> result,int start,int remain){
+        if(solution.size()>3)
+            return;
+        if(solution.size()==3 && remain ==0){
+            result.add(solution);
+            return;
+        }
+        for(int i= start;i<num.length;i++){
+            remain += num[i];
+            solution.add(num[i]);
+            findSolution(num,solution,result,i+1,remain);
+            solution.remove(solution.size()-1);
+        }
+    }
+}
+对于求和的经典算法：先排列后组合 注意考虑各种corner cases
+public class Solution {
+    public List<List<Integer>> threeSum(int[] num) {
+        List<List<Integer>> result = new ArrayList<List<Integer>>();
+        Arrays.sort(num);
+        if(num.length==0 || num[0]>0){
+            return result;
+        }
+        for(int i=0;i<num.length-2;i++){
+            if(i>0 && num[i]==num[i-1])
+                continue;
+            int remain = num[i];
+            int start = i+1;
+            int end = num.length-1;
+            while(start<end){
+                if(remain+num[start]+num[end]>0)
+                    end--;
+                else if(remain+num[start]+num[end]<0)
+                    start++;
+                else{
+                    List<Integer> solution = new ArrayList<Integer>();
+                    solution.add(num[i]);
+                    solution.add(num[start]);
+                    solution.add(num[end]);
+                    result.add(solution);
+                    start++;
+                    end--;
+                    while(start<num.length-1 && num[start]==num[start-1])
+                        start++;
+                    while(end>0 && num[end]==num[end+1])
+                        end--;
+                }
+            }
+        }
+        return result;
+    }
+}
+
+
+________________________
+Recover Binary Search Tree
+用中序扫一遍即可，另外可以用list来代表传递一个记录变量，用set函数即可。
+/**
+ * Definition for binary tree
+ * public class TreeNode {
+ *     int val;
+ *     TreeNode left;
+ *     TreeNode right;
+ *     TreeNode(int x) { val = x; }
+ * }
+ */
+public class Solution {
+    public void recoverTree(TreeNode root) {
+        if(root==null)
+            return;
+        List<TreeNode> errorPos = new ArrayList<TreeNode>();
+        List<TreeNode> prev = new ArrayList<TreeNode>();
+        prev.add(null);
+        findError(root,errorPos,prev);
+        if(errorPos.size()==4){
+            int temp = errorPos.get(0).val;
+            errorPos.get(0).val = errorPos.get(3).val;
+            errorPos.get(3).val = temp;
+        }
+        else{
+            int temp = errorPos.get(0).val;
+            errorPos.get(0).val = errorPos.get(1).val;
+            errorPos.get(1).val = temp;
+        }
+    }
+    public void findError(TreeNode node, List<TreeNode> errorPos, List<TreeNode> prev){
+        if(node==null)
+            return;
+        findError(node.left,errorPos,prev);
+	注释地方不需要加，因为中序遍历必然能经历每一个节点，因此只需把当前节点存到prev即可
+        //if(node.left!=null)
+        //    prev.set(0,node.left);
+        if(prev.get(0)!=null && prev.get(0).val>node.val){
+            errorPos.add(prev.get(0));
+            errorPos.add(node);
+        }
+        prev.set(0,node);
+        findError(node.right,errorPos,prev);
+    }
+}
+
+___________________
+Search for a Range
+与普通的找出位置不同的是做两次binarySearch一次low一次找high即可
+public class Solution {
+    public int[] searchRange(int[] A, int target) {
+        int[] result = new int[2];
+		result[1] = binarySearchHigh(A, 0, A.length-1, target);
+		result[0] = binarySearchLow(A, 0, A.length-1, target);
+		return result;
+    }
+    public int binarySearchLow(int[] num,int s,int e,int key){
+		while(s<=e){
+			int mid = (s+e)/2;
+			if(num[mid]<key)
+				s = mid+1;
+			else if(num[mid]>key)
+				e = mid-1;
+			else{
+				if(mid>0 && num[mid-1]==key)
+					e = mid-1;
+				else
+					return mid;
+			}
+		}
+		return -1;
+	}
+	public int binarySearchHigh(int[] num,int s,int e,int key){
+		while(s<=e){
+			int mid = (s+e)/2;
+			if(num[mid]<key)
+				s = mid+1;
+			else if(num[mid]>key)
+				e = mid-1;
+			else{
+				if(mid<num.length-1 && num[mid+1]==key)
+					s = mid+1;
+				else
+					return mid;
+			}
+		}
+		return -1;
+	}
+}
+
+
+______________________
+Triangle
+这种不需要输出遍历情况的适宜用动态规划来求解
+
+递归解法：超时
+
+public class Solution {
+    public int minimumTotal(List<List<Integer>> triangle) {
+        int min = Integer.MAX_VALUE;
+        for(int i = 0; i<triangle.get(0).size();i++){
+            min = findSolution(triangle,1,triangle.get(0).get(i),i,min);
+        }
+        return min;
+    }
+    public int findSolution(List<List<Integer>> triangle, int level, int temp, int start, int min){
+        if(level==triangle.size()){
+            return temp<min?temp:min;            
+        }
+        for(int i=start; i<=start+1;i++){
+            min = findSolution(triangle, level+1, temp+triangle.get(level).get(i), i, min);
+        }
+        return min;
+    }
+}
+
+
+动态规划解法：
+public class Solution {
+    public int minimumTotal(List<List<Integer>> triangle) {
+        int level = triangle.size();
+        int[] store = new int[triangle.get(level-1).size()];
+        for(int i=level-1;i>=0;i--){
+            int len = triangle.get(i).size();
+            for(int j=0;j<len;j++){
+                if(i==level-1){
+                    store[j]=triangle.get(i).get(j);
+                    continue;
+                }
+                store[j]=Math.min(store[j]+triangle.get(i).get(j),store[j+1]+triangle.get(i).get(j));
+            }                
+        }
+        return store[0];
+    }
+    
+}
+
+
+__________________
+Roman to Integer
+
+public class Solution {
+    public int romanToInt(String s) {
+        int result = 0;
+        char[] cArray = s.toCharArray();
+        for(int i=0;i<cArray.length;i++){
+            if(i>0 && cng(cArray[i])>cng(cArray[i-1]))
+                result += (cng(cArray[i])-2*cng(cArray[i-1]));
+            else
+                result += cng(cArray[i]);
+        }
+        return result;
+    }
+    public int cng(char c){
+        switch(c){
+          case 'I': return 1;  
+          case 'V': return 5;  
+          case 'X': return 10;  
+          case 'L': return 50;  
+          case 'C': return 100;  
+          case 'D': return 500;  
+          case 'M': return 1000;
+          default: return 0;
+        }
+    }
+}
+
+____________________
+Anagrams
+超时算法：
+public class Solution {
+    public List<String> anagrams(String[] strs) {
+        List<String> result = new ArrayList<String>();
+        if(strs.length==0)
+            return result;
+        boolean[] check = new boolean[strs.length];
+        for(int i=0;i<strs.length-1;i++){
+            if(check[i])
+                continue;
+            for(int j=i+1;j<strs.length;j++){
+                if(check[j])
+                    continue;
+                if(isAnag(strs[i],strs[j])){
+                    check[i] = true;
+                    check[j] = true;
+                }
+            }
+        }
+        for(int i=0;i<strs.length;i++)
+            if(check[i])
+                result.add(strs[i]);
+        return result;
+    }
+    public boolean isAnag(String s1,String s2){
+        char[] c1 = s1.toCharArray();
+        char[] c2 = s2.toCharArray();
+        Arrays.sort(c1);
+        Arrays.sort(c2);
+        s1 = String.valueOf(c1);
+        s2 = String.valueOf(c2);
+        return s1.equals(s2);
+    }
+}
+
+用HashMap可解决以上问题（只用扫描一遍）
+public class Solution {
+    public List<String> anagrams(String[] strs) {
+        List<String> result = new ArrayList<String>();
+        if(strs.length==0)
+            return result;
+        boolean[] check = new boolean[strs.length];
+        HashMap<String,Integer> store = new HashMap<String,Integer>();
+        String temp = "";
+        for(int i=0;i<strs.length;i++){
+            temp = cng(strs[i]);
+            if(!store.containsKey(temp))
+                store.put(temp,i);
+            else{
+                check[store.get(temp)]=true;
+                check[i]= true;
+            }
+        }
+        for(int i=0;i<strs.length;i++)
+            if(check[i])
+                result.add(strs[i]);
+        return result;
+    }
+    public String cng(String s1){
+        char[] c1 = s1.toCharArray();
+        Arrays.sort(c1);
+        String s2 = String.valueOf(c1);
+        return s2;
+    }
+}
+
+—————————————
+Clone Graph
+利用map和BFS来实现整个图的拷贝，注意BFS也可以用一个list来实现，用remove（0）来提取list 的头
+/**
+ * Definition for undirected graph.
+ * class UndirectedGraphNode {
+ *     int label;
+ *     List<UndirectedGraphNode> neighbors;
+ *     UndirectedGraphNode(int x) { label = x; neighbors = new ArrayList<UndirectedGraphNode>(); }
+ * };
+ */
+public class Solution {
+    public UndirectedGraphNode cloneGraph(UndirectedGraphNode node) {
+        if(node == null)
+            return null;
+        HashMap<UndirectedGraphNode,UndirectedGraphNode> check = new HashMap<UndirectedGraphNode,UndirectedGraphNode>();
+        UndirectedGraphNode nodeCopy = new UndirectedGraphNode(node.label);
+        List<UndirectedGraphNode> queue = new ArrayList<UndirectedGraphNode>();
+        queue.add(node);
+        check.put(node,nodeCopy);
+        while(!queue.isEmpty()){
+            UndirectedGraphNode pop = queue.remove(0);
+            for(UndirectedGraphNode neighbor: pop.neighbors){
+                if(!check.containsKey(neighbor)){
+                    UndirectedGraphNode neiCopy = new UndirectedGraphNode(neighbor.label);
+                    check.put(neighbor,neiCopy);
+                    check.get(pop).neighbors.add(neiCopy);
+                    queue.add(neighbor);
+                }
+                else{
+                    check.get(pop).neighbors.add(check.get(neighbor));
+                }
+            }
+        }
+        return nodeCopy;
+    }
+}
+
+
+__________________
+Divide Two Integers
+
+时间复杂度为logN的方法，注意Int最小值时绝对值比最大值大1，故 要加上一个非负除数得以进行双方的绝对值运算
+（还有一种复杂度为N的方法就是用减法一次减到绝对值小于除数）
+public class Solution {
+    public int divide(int dividend, int divisor) {
+        if(divisor==0)
+            return 0;
+            
+        int result = 0;
+        if(dividend==Integer.MIN_VALUE){
+            result = 1;
+            dividend += Math.abs(divisor);
+        }
+        if(divisor==Integer.MIN_VALUE)
+            return result;
+            
+        boolean isNeg = ((dividend^divisor)>>>31==1)?true:false;
+        dividend = Math.abs(dividend);
+        divisor = Math.abs(divisor);
+        int digits = 0;
+        while(divisor<=(dividend>>1)){
+            divisor<<=1;
+            digits++;
+        }
+        while(digits>=0){
+            if(dividend>=divisor){
+                dividend-=divisor;
+                result += 1<<digits;
+            }
+            divisor>>=1;
+            digits--;
+        }
+        return isNeg==true?-result:result;
+    }
+}
+
+—————————————————
+Wildcard Matching
+即使用递归并处理了一些corner cases仍然超时
+public class Solution {
+    public boolean isMatch(String s, String p) {
+        if(p.length()==0)
+            return s.length()==0;
+        if(p.charAt(p.length()-1)!='*' && s.length()!=0 && s.charAt(s.length()-1)!=p.charAt(p.length()-1))
+            return false;
+        if(p.charAt(0)!='*'){
+            if(s.length()<1 || (p.charAt(0)!='?' && p.charAt(0)!=s.charAt(0)))
+                return false;
+            return isMatch(s.substring(1),p.substring(1));
+        }
+        else{
+            int i=-1;
+            while(i<s.length()){
+                int index = 0;
+                while(index<p.length() && p.charAt(index)=='*')
+                    index++;
+                if(isMatch(s.substring(i+1),p.substring(index)))
+                    return true;
+                i++;
+            }
+            return false;
+        }
+    }
+}
+碉炸天的循环算法：用一组变量记录最近一次*的s和p的位置并且做复位循环
+
+public class Solution {
+    public boolean isMatch(String s, String p) {
+        if(p.length()==0)
+            return s.length()==0;
+        boolean star = false;
+        int si = 0;
+        int pi = 0;
+        int sindex;
+        int pindex;
+        for(sindex=0,pindex=0;sindex<s.length();sindex++,pindex++){
+            if(pindex==p.length()){
+                if(!star)
+                    return false;
+                si++;
+                sindex = si;
+                pindex = pi;
+            }
+            switch(p.charAt(pindex)){
+                case '?':
+                    break;
+                case '*':
+                    star = true;
+                    while(pindex<p.length() && p.charAt(pindex)=='*')
+                        pindex++;
+                    if(pindex==p.length())
+                        return true;
+                    pi = pindex;
+                    si = sindex;
+                    sindex--;
+                    pindex--;
+                    break;
+                default:
+                    if(s.charAt(sindex)!=p.charAt(pindex)){
+                        if(!star)
+                            return false;
+                        si++;
+                        sindex = si-1;
+                        pindex = pi-1;
+                    }
+            }
+        }
+        while(pindex<p.length() && p.charAt(pindex)=='*')
+            pindex++;
+        return pindex == p.length();
+    }
+}
+
+__________________________
+Unique Binary Search Trees
+找到数学规律然后进行循环运算
+这里构建了一个n=0时的辅助量 为了循环运算时方便调用
+public class Solution {
+    public int numTrees(int n) {
+        int[] store = new int[n+1];
+        store[0] = 1;
+        store[1] = 1;
+        for(int i=2;i<=n;i++){
+            for(int j=0;j<i;j++){
+                store[i] += store[j]*store[i-j-1]; 
+            }
+        }
+        return store[n];
+    }
+}
+
+__________________________
+Binary Tree Inorder Traversal
+除了一般的递归方法，可以使用DFS来循环遍历
+/**
+ * Definition for binary tree
+ * public class TreeNode {
+ *     int val;
+ *     TreeNode left;
+ *     TreeNode right;
+ *     TreeNode(int x) { val = x; }
+ * }
+ */
+public class Solution {
+    public List<Integer> inorderTraversal(TreeNode root) {
+        List<Integer> result = new ArrayList<Integer>();
+        if(root==null)
+            return result;
+        Stack<TreeNode> store = new Stack<TreeNode>();
+        store.push(root);
+        addNode(root,result,store);
+        return result;
+    }
+    public void addNode(TreeNode node, List<Integer> result, Stack<TreeNode> store){
+        if(node==null)
+            return;
+        
+        TreeNode p = node;
+        while(!store.empty()){
+            while(p!=null && p.left!=null){
+                store.push(p.left);
+                p = p.left;
+            }
+            p = store.pop();
+            result.add(p.val);
+            p = p.right;
+            if(p!=null)
+                store.push(p);
+        }
+    }
+}
+
+________________________
+Balanced Binary Tree
+注意balanced tree的定义，是对每个节点的两子节点深度比较
+/**
+ * Definition for binary tree
+ * public class TreeNode {
+ *     int val;
+ *     TreeNode left;
+ *     TreeNode right;
+ *     TreeNode(int x) { val = x; }
+ * }
+ */
+public class Solution {
+    public boolean isBalanced(TreeNode root) {
+        if(root==null)
+            return true;
+        return Math.abs(getHeight(root.left)-getHeight(root.right))<=1 && isBalanced(root.left) && isBalanced(root.right);
+    }
+    public int getHeight(TreeNode node){
+        if(node == null)
+            return 0;
+        return 1 + Math.max(getHeight(node.left),getHeight(node.right));
+    }
+}
+
+_______________
+Convert Sorted Array to Binary Search Tree
+/**
+ * Definition for binary tree
+ * public class TreeNode {
+ *     int val;
+ *     TreeNode left;
+ *     TreeNode right;
+ *     TreeNode(int x) { val = x; }
+ * }
+ */
+public class Solution {
+    public TreeNode sortedArrayToBST(int[] num) {
+        if(num.length==0)
+            return null;
+        return buildTree(num,0,num.length-1);
+    }
+    public TreeNode buildTree(int[] num, int start, int end){
+        if(start>end)
+            return null;
+        int mid = (start+end)/2;
+        TreeNode node = new TreeNode(num[mid]);
+        node.left = buildTree(num,start,mid-1);
+        node.right = buildTree(num,mid+1,end);
+        
+        return node;
+    }
+}
+
+____________________
+Symmetric Tree
+/**
+ * Definition for binary tree
+ * public class TreeNode {
+ *     int val;
+ *     TreeNode left;
+ *     TreeNode right;
+ *     TreeNode(int x) { val = x; }
+ * }
+ */
+public class Solution {
+    public boolean isSymmetric(TreeNode root) {
+        if(root==null)
+            return true;
+        List<TreeNode> store = new ArrayList<TreeNode>();
+        store.add(root);
+        return isSymmetric(store);
+    }
+    public boolean isSymmetric(List<TreeNode> store){
+        while(store.size()!=0){
+            int start = 0;
+            int end = store.size()-1;
+            while(start<=end){
+                if(store.get(start)==null && store.get(end)==null){
+                    start++;
+                    end--;
+                    continue;
+                }
+                else if(store.get(start)==null || store.get(end)==null || store.get(start).val!=store.get(end).val)
+                    return false;
+                start++;
+                end--;
+            }
+            int count = 0;
+            List<TreeNode> copy = new ArrayList<TreeNode>();
+            for(int i=0;i<store.size();i++){
+                if(store.get(i)==null)
+                    count++;
+                else{
+                    copy.add(store.get(i).left);
+                    copy.add(store.get(i).right);
+                }
+            }
+            if(count==store.size())
+                break;
+            store.clear();
+            store.addAll(copy);
+        }
+        return true;
+    }
+}
+
+_____________________
+Minimum Depth of Binary Tree（最小深度的求法略有不同，因为不能把空当做是leaf）
+/**
+ * Definition for binary tree
+ * public class TreeNode {
+ *     int val;
+ *     TreeNode left;
+ *     TreeNode right;
+ *     TreeNode(int x) { val = x; }
+ * }
+ */
+public class Solution {
+    public int minDepth(TreeNode root) {
+        if(root==null)
+            return 0;
+        if(root.left!=null && root.right==null)
+            return 1+minDepth(root.left);
+        else if(root.left==null && root.right!=null)
+            return 1+minDepth(root.right);
+        return  1+Math.min(minDepth(root.left),minDepth(root.right));
+    }
+}
+
+_______________________
+Flatten Binary Tree to Linked List
+（注意递归传递的参数除了list，数组等不变外，class类型也不变，故要记得删除每个节点class的左节点）
+
+/**
+ * Definition for binary tree
+ * public class TreeNode {
+ *     int val;
+ *     TreeNode left;
+ *     TreeNode right;
+ *     TreeNode(int x) { val = x; }
+ * }
+ */
+public class Solution {
+    public void flatten(TreeNode root) {
+        if(root==null)
+            return;
+        List<TreeNode> list = new ArrayList<TreeNode>();
+        buildList(root, list);
+        for(int i=0;i<list.size();i++){
+            if(i>0)
+                list.get(i-1).right = list.get(i);
+            list.get(i).left = null;
+        }
+    }
+    public void buildList(TreeNode node, List<TreeNode> list){
+        if(node==null)
+            return;
+        list.add(node);
+        buildList(node.left,list);
+        buildList(node.right,list);
+    }
+    
+}
+
+____________________
+Convert Sorted List to Binary Search Tree
+巧妙解法在于 sorted list的balanced tree的in order 排列其实和这个list从左到右的顺序一样，可以考虑使用递归
+bottom-up的方法来求得，用一个全局变量来代表链表头，链表头每次移到下一个节点很巧妙！
+/**
+ * Definition for singly-linked list.
+ * public class ListNode {
+ *     int val;
+ *     ListNode next;
+ *     ListNode(int x) { val = x; next = null; }
+ * }
+ */
+/**
+ * Definition for binary tree
+ * public class TreeNode {
+ *     int val;
+ *     TreeNode left;
+ *     TreeNode right;
+ *     TreeNode(int x) { val = x; }
+ * }
+ */
+public class Solution {
+    private ListNode hCopy;
+    public TreeNode sortedListToBST(ListNode head) {
+        if(head==null)
+            return null;
+        hCopy = head;
+        int len = 1;
+        ListNode temp = head;
+        while(temp.next!=null){
+            temp = temp.next;
+            len++;
+        }
+        return sortedListToBST(0,len-1);
+    }
+    public TreeNode sortedListToBST(int start, int end){
+        if(start>end)
+            return null;
+        int mid = (start+end)/2;
+        TreeNode left = sortedListToBST(start,mid-1);
+        TreeNode root = new TreeNode(hCopy.val);
+        hCopy = hCopy.next;
+        TreeNode right = sortedListToBST(mid+1,end);
+        root.left = left;
+        root.right = right;
+        
+        return root;
+    }
+}
+
+_____________________________
+Unique Binary Search Trees II
+注意节点class和list的传递一样是指针传递型所以一定要拷贝再add否则会覆盖！
+/**
+ * Definition for binary tree
+ * public class TreeNode {
+ *     int val;
+ *     TreeNode left;
+ *     TreeNode right;
+ *     TreeNode(int x) { val = x; left = null; right = null; }
+ * }
+ */
+public class Solution {
+    public List<TreeNode> generateTrees(int n) {
+        return buildTree(1,n);    
+    }
+    public List<TreeNode> buildTree(int left, int right){
+        List<TreeNode> result = new ArrayList<TreeNode>();
+        if(left>right){
+            result.add(null);
+            return result;
+        }
+        for(int i=left;i<=right;i++){
+            List<TreeNode> leftList = buildTree(left,i-1);
+            List<TreeNode> rightList = buildTree(i+1,right);
+            for(int lsize=0;lsize<leftList.size();lsize++){
+                for(int rsize=0;rsize<rightList.size();rsize++){
+                    TreeNode root = new TreeNode(i);
+                    root.left = leftList.get(lsize);
+                    root.right = rightList.get(rsize);
+                    result.add(root);
+                }
+            }
+        }
+        return result;
+    }
+}
+
+_________________________
+Validate Binary search Tree
+此题有陷阱！
+
+/**
+ * Definition for binary tree
+ * public class TreeNode {
+ *     int val;
+ *     TreeNode left;
+ *     TreeNode right;
+ *     TreeNode(int x) { val = x; }
+ * }
+ */
+public class Solution {
+    public boolean isValidBST(TreeNode root){
+        return isValidBST(root,Integer.MIN_VALUE,Integer.MAX_VALUE);
+    }
+    public boolean isValidBST(TreeNode root, int min, int max) {
+        if(root==null)
+            return true;
+        if(root.val<=min || root.val>=max)
+            return false;
+        
+        return isValidBST(root.left,min,root.val) && isValidBST(root.right, root.val, max);
+    }
+}
+
+____________________________
+Binary Tree Zigzag Level Order Traversal
+此题可以尝试BFS的做法，加上一个boolean作为切换的flip开关
+/**
+ * Definition for binary tree
+ * public class TreeNode {
+ *     int val;
+ *     TreeNode left;
+ *     TreeNode right;
+ *     TreeNode(int x) { val = x; }
+ * }
+ */
+public class Solution {
+    public List<List<Integer>> zigzagLevelOrder(TreeNode root) {
+        List<List<Integer>> result = new ArrayList<List<Integer>>();
+        if(root==null)
+            return result;
+        List<TreeNode> storeNode = new ArrayList<TreeNode>();
+        storeNode.add(root);
+        findSolution(storeNode, result);
+        return result;
+    }
+    public void findSolution(List<TreeNode> storeNode, List<List<Integer>> result){
+        boolean flip = true;
+        while(!storeNode.isEmpty()){
+            List<Integer> solution = new ArrayList<Integer>();
+            List<TreeNode> temp = new ArrayList<TreeNode>();
+            for(int i=0;i<storeNode.size();i++){
+                solution.add(storeNode.get(i).val);
+                if(storeNode.get(i).left!=null)
+                    temp.add(storeNode.get(i).left);
+                if(storeNode.get(i).right!=null)
+                    temp.add(storeNode.get(i).right);
+            }
+            if(!flip){
+                int start= 0;
+                int end= solution.size()-1;
+                while(start<end){
+                    int reg = solution.get(start);
+                    solution.set(start,solution.get(end));
+                    solution.set(end,reg);
+                    start++;
+                    end--;
+                }
+            }
+            result.add(solution);
+            flip = !flip;
+            storeNode.clear();
+            storeNode.addAll(temp);
+        }
+    }
+}
+
+_________________________________
+Construct Binary Tree from Preorder and Inorder Traversal 
+每次取出preorder中的头节点后左子树和右子树的处理方法其实是递归
+如果是inorder和postorder可以从postorder的最后一个节点开始推起，一样的道理
+
+/**
+ * Definition for binary tree
+ * public class TreeNode {
+ *     int val;
+ *     TreeNode left;
+ *     TreeNode right;
+ *     TreeNode(int x) { val = x; }
+ * }
+ */
+public class Solution {
+    public TreeNode buildTree(int[] preorder, int[] inorder) {
+        if(preorder.length==0 && inorder.length==0)
+            return null;
+        int i;
+        for(i=0;i<inorder.length;i++){
+            if(preorder[0]==inorder[i])
+                break;
+        }
+        TreeNode root = new TreeNode(preorder[0]);
+        root.left = solution(preorder,inorder,1,i,0,i-1);
+        root.right = solution(preorder,inorder,i+1,preorder.length-1,i+1,inorder.length-1);
+        return root;
+    }
+    public TreeNode solution(int[] preorder, int[] inorder, int preH, int preT, int inH, int inT){
+        if(inH>inT)
+            return null;
+        int i;
+        for(i=inH;i<=inT;i++){
+            if(preorder[preH]==inorder[i])
+                break;
+        }
+        TreeNode root = new TreeNode(preorder[preH]);
+        root.left = solution(preorder,inorder,preH+1,i-inH+preH,inH,i-1);
+        root.right = solution(preorder,inorder,i-inH+preH+1,preT,i+1,inT);
+        return root;
+    }
+}
+
+______________________________
+Binary Tree Maximum Path Sum
+很有难度！ 设置一个局部最大值和一个向上的最新最大值，从上往下递归
+/**
+ * Definition for binary tree
+ * public class TreeNode {
+ *     int val;
+ *     TreeNode left;
+ *     TreeNode right;
+ *     TreeNode(int x) { val = x; }
+ * }
+ */
+public class Solution {
+    public int maxPathSum(TreeNode root) {
+        if(root==null)
+            return 0;
+        List<Integer> lastMax = new ArrayList<Integer>();
+        lastMax.add(Integer.MIN_VALUE);
+        int maxValue = getMax(root,lastMax);
+        return Math.max(maxValue,lastMax.get(0));
+    }
+    public int getMax(TreeNode root, List<Integer> lastMax){
+        if(root==null)
+            return 0;
+        int left = getMax(root.left, lastMax);
+        int right = getMax(root.right, lastMax);
+        int tempMax = root.val;
+        if(left>0)
+            tempMax+=left;
+        if(right>0)
+            tempMax+=right;
+        lastMax.set(0,Math.max(lastMax.get(0),tempMax));
+        return Math.max(root.val,Math.max(root.val+left,root.val+right));
+    }
+}
+
+_____________________
+Maximum Subarray
+简单的设一个max值来存储临时最大值
+但可以尝试logn的算法
+
+______________________
+Remove Duplicates from Sorted Array
+Java的数组只能把前面几位改掉并返回一个长度，不能切割数组（在不开新的数组前提下）
+public class Solution {
+    public int removeDuplicates(int[] A) {
+        if(A.length==0)
+            return 0;
+        int index=1;
+        for(int i=1;i<A.length;i++){
+            if(A[i]!=A[i-1]){
+                if(i!=index){
+                    A[index]=A[i];
+                }
+                index++;
+            }
+        }
+        return index;
+    }
+}
+以下是允许一对重复数字的算法，注意这时index会在每个iteration都做一次覆盖
+public class Solution {
+    public int removeDuplicates(int[] A) {
+        if(A.length==0)
+            return 0;
+        int count =0;
+        int index =1;
+        for(int i=1;i<A.length;i++){
+            if(A[i]!=A[i-1]){
+                if(i!=index){
+                    A[index]=A[i];
+                }
+                index++;
+                count=0;
+            }
+            else {
+                if(count<1){
+                    A[index]=A[i];
+                    index++;
+                }
+                count++;
+            }
+        }
+        return index;
+    }
+}
+
