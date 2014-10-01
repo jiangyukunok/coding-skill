@@ -2086,3 +2086,28 @@ public class Solution {
     }
 }
 
+—————————————
+Spiral Matrix II 
+
+public class Solution {
+    public int[][] generateMatrix(int n) {
+        int[][] matrix = new int[n][n];
+        if(n==0)
+            return matrix;
+        //must consider the inner element if n is an odd.
+        if(n%2==1)
+            matrix[n/2][n/2] = n*n;
+        int index=1;
+        for(int level=0;level<n/2;level++){
+            for(int i=level;i<n-level-1;i++)
+                matrix[level][i] = index++;
+            for(int i=level;i<n-level-1;i++)
+                matrix[i][n-1-level] = index++;
+            for(int i=level;i<n-level-1;i++)
+                matrix[n-1-level][n-1-i] = index++;
+            for(int i=level;i<n-level-1;i++)
+                matrix[n-1-i][level] = index++;
+        }
+        return matrix;
+    }
+}
