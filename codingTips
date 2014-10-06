@@ -5,6 +5,134 @@ pre-order 头左右
 in-order 左到右
 post-order 左右头
 
+——————————————
+Combination Sum 
+
+public class Solution {
+    //similar to the question to compute ways to sum up to certain dollars.
+    //better way is to count from large number to smaller number which would save some iterations.
+    public List<List<Integer>> combinationSum(int[] candidates, int target) {
+        List<List<Integer>> result = new ArrayList<List<Integer>>();
+        if(candidates.length==0)
+            return result;
+        List<Integer> solution = new ArrayList<Integer>();
+        Arrays.sort(candidates);
+        findSolution(candidates,target,solution,result,0);
+        return result;
+    }
+    public void findSolution(int[] candidates, int target, List<Integer> solution, List<List<Integer>> result, int start){
+        if(target==0){
+            List<Integer> copy = new ArrayList<Integer>(solution);
+            result.add(copy);
+            return;
+        }
+        for(int i=start;i<candidates.length;i++){
+            if(target>=candidates[i]){
+                solution.add(candidates[i]);
+                findSolution(candidates,target-candidates[i],solution,result,i);
+                solution.remove(solution.size()-1);
+            }
+        }
+            
+    }
+}
+
+————————————
+3Sum Closest 
+
+public class Solution {
+    public int threeSumClosest(int[] num, int target) {
+        if(num.length<3)
+            return 0;
+        Arrays.sort(num);
+        int result = 0;
+        int minDiffer = Integer.MAX_VALUE;
+        for(int i=0;i<num.length;i++){
+            if(i>0 && num[i]==num[i-1])
+                continue;
+            int start = i+1;
+            int end = num.length-1;
+            while(start<end){
+                int sum = num[i]+num[start]+num[end];
+                if(minDiffer>Math.abs(target-sum)){
+                    minDiffer=Math.abs(target-sum);
+                    result = sum;
+                }
+                //for this question, don't need to remove duplication
+                if(sum<target)
+                    start++;
+                else
+                    end--;
+            }
+        }
+        return result;
+    }
+}
+
+———————————————
+Longest Common Prefix
+
+public class Solution {
+    public String longestCommonPrefix(String[] strs) {
+        String result="";
+        if(strs.length==0)
+            return result;
+        outer:
+        for(int i=0;;i++){
+            for(int j=0;j<strs.length;j++){
+                if(i>strs[j].length()-1 || strs[j].charAt(i)!=strs[0].charAt(i))
+                    break outer;
+            }
+            result=result+strs[0].substring(i,i+1);
+        }
+        return result;
+    }
+}
+————————————————
+Jump Game
+线性扫描法：
+public class Solution {
+    public boolean canJump(int[] A) {
+        if(A.length==0)
+            return false;
+        if(A.length==1)
+            return true;
+        int max = A[0];
+        for(int i=0;i<A.length;i++){
+            if(i+A[i]>=A.length-1 && max>=i)
+                return true;
+            if(i>max)
+                return false;
+            max = Math.max(max,i+A[i]);
+        }
+        return false;
+    }
+}
+
+动态规划法：
+public class Solution {
+    public boolean canJump(int[] A) {
+        if(A.length==0)
+            return false;
+        if(A.length==1)
+            return true;
+        boolean[] check = new boolean[A.length];
+        for(int i=A.length-2;i>=0;i--){
+            if(i+A[i]>=A.length-1)
+                check[i]=true;
+            else{
+                for(int j=i+1;j<A.length-1;j++){
+                    if(i+A[i]>=j)
+                        check[i]=check[j];
+                    if(check[i])
+                        break;
+                }
+            }
+        }
+        return check[0];
+    }
+}
+
 —————————————
 10/04
 Count and Say
