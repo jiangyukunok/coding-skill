@@ -5,6 +5,33 @@ pre-order 头左右
 in-order 左到右
 post-order 左右头
 
+—————————
+Gas Station
+我们可以使用一个cycle逐点扫描的方法取剩油最多的点，也可以使用以下碉炸天的方法
+注意differ的应用和最后的检查
+public class Solution {
+    public int canCompleteCircuit(int[] gas, int[] cost) {
+        if(gas.length==0)
+            return -1;
+        int remain = 0;
+        int index = 0;
+        int differ = 0;
+        for(int i=0;i<gas.length;i++){
+            if(remain+(gas[i]-cost[i])<0){
+                differ+=remain+(gas[i]-cost[i]);
+                index=i+1;
+                remain=0;
+            }
+            else{
+                remain+=(gas[i]-cost[i]);
+            }
+        }
+        if(index<gas.length && remain+differ>=0)
+            return index;
+        return -1;
+    }
+}
+
 ——————————————
 Combination Sum 
 
