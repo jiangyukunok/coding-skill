@@ -5,6 +5,28 @@ pre-order 头左右
 in-order 左到右
 post-order 左右头
 
+——————
+Distinct Subsequences
+非常经典的Dp题，二维Dp
+public class Solution {
+    public int numDistinct(String S, String T) {
+        int lenS = S.length();
+        int lenT = T.length();
+        if(lenS<lenT)
+            return 0;
+        int[][] store = new int[lenS+1][lenT+1];
+        for(int i=0;i<lenS+1;i++)
+            store[i][0] = 1;
+        for(int i=1;i<=lenT;i++)
+            for(int j=i;j<=lenS;j++){
+                if(S.charAt(j-1)==T.charAt(i-1))
+                    store[j][i] = store[j-1][i] + store[j-1][i-1];
+                else
+                    store[j][i] = store[j-1][i];
+            }
+        return store[lenS][lenT];  
+    }
+}
 ———————
 Reverse Nodes in k-Group
 经典的list翻转的组合
