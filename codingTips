@@ -5,6 +5,84 @@ pre-order 头左右
 in-order 左到右
 post-order 左右头
 
+————————
+zigZag Conversion
+数学规律题
+public class Solution {
+    public String convert(String s, int nRows) {
+        if(s.length()<=1 || nRows==1)
+            return s;
+        String result = "";
+        for(int i=1;i<=nRows;i++){
+            int c1 = i-1;
+            if(i==1 || i==nRows){
+                while(c1<s.length()){
+                    result+=s.substring(c1,c1+1);
+                    c1+=2*(nRows-1);
+                }
+                continue;
+            }
+            while(c1<s.length()){
+                result+=s.substring(c1,c1+1);
+                int temp = c1+2*(nRows-i);
+                if(temp<s.length())
+                    result+=s.substring(temp,temp+1);
+                else
+                    break;
+                c1+=2*(nRows-1);
+            }
+        }
+        return result;
+    }
+}
+——————
+Jump Game II
+用Dp来解的方法：（会延时，复杂度为n2）
+public class Solution {
+    public int jump(int[] A) {
+        if(A.length<=1)
+            return 0;
+        int[] store = new int[A.length];
+        boolean[] check = new boolean [A.length];
+        check[A.length-1] = true;
+        
+        for(int i=A.length-2;i>=0;i--){
+            int tempMin = Integer.MAX_VALUE;
+            for(int j=1;j<=A[i];j++){
+                if(i+j>=A.length-1 || check[i+j]){
+                    check[i] = true;
+                    tempMin = i+j>=A.length-1? 1:Math.min(1+store[i+j],tempMin);
+                }
+            }
+            store[i] = tempMin;
+        }
+        return store[0];
+    }
+}
+
+线性扫描复杂度的解法：
+public class Solution {
+    public int jump(int[] A) {
+        if(A.length<=1)
+            return 0;
+        int count = 1;
+        int maxRange = A[0];
+        int prevRange = maxRange;
+        if(prevRange>=A.length-1)
+            return 1;
+        for(int i=1;i<A.length-1;i++){
+            maxRange = Math.max(maxRange,i+A[i]);
+            if(i==prevRange){
+                count++;
+                prevRange = maxRange;
+                if(prevRange>=A.length-1)
+                    break;
+            }
+        }
+        return count;
+    }
+}
+
 ——————
 Distinct Subsequences
 非常经典的Dp题，二维Dp
