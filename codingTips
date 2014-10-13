@@ -4,6 +4,170 @@
 pre-order 头左右
 in-order 左到右
 post-order 左右头
+———————
+Longest Substring Without Repeating Characters
+注意handle最后一个元素的case
+
+public class Solution {
+    public int lengthOfLongestSubstring(String s) {
+        if(s.length()<=1)
+            return s.length();
+        HashMap<Character,Integer> store = new HashMap<Character,Integer>();
+        int max = 0;
+        int start = 0;
+        for(int i=0;i<s.length();i++){
+            if((store.containsKey(s.charAt(i))&&store.get(s.charAt(i))>=start) || (i==s.length()-1)){
+                if(i==s.length()-1 && ((!store.containsKey(s.charAt(i)))||store.get(s.charAt(i))<start)){
+                    if(i-start>=max)
+                        max = i-start+1;
+                }
+                else{
+                    max = Math.max(max,i-start);
+                    start = 1+store.get(s.charAt(i));
+                    store.put(s.charAt(i),i);
+                }
+            }
+            else{
+                store.put(s.charAt(i),i);
+            }
+        }
+        return max;
+    }
+}
+
+————————
+Sqrt(x)
+注意取整时的平方要小于原数且平方不能溢出
+public class Solution {
+    public int sqrt(int x) {
+        if(x<=1){
+            return x;
+        }
+        double start = 1;
+        double end = (double)x;
+        double compare = 0;
+        while(true){
+            double mid = (start+end)/2;
+            if(Math.abs(compare-mid)<0.1){
+                int result = (int)mid;
+                while(result*result>x)
+                    result--;
+                if((result+1)*(result+1)>0 && (result+1)*(result+1)<x)
+                    return result+1;
+                else
+                    return result;
+            }
+            if(mid*mid>x)
+                end=mid;
+            else if(mid*mid<x)
+                start=mid;
+            else
+                return (int)mid;
+            compare = mid;
+        }
+    }
+}
+—————————
+Best Time to Buy and Sell Stock III
+有难度！注意in order和reverse的min，max变化，以及一维Dp的运用
+public class Solution {
+    public int maxProfit(int[] prices) {
+        if(prices.length<=1)
+            return 0;
+        if(prices.length==2)
+            return prices[1]>prices[0]?prices[1]-prices[0]:0;
+        int[] inorder = new int[prices.length];
+        int[] reverse = new int[prices.length];
+        int min=0;
+        int max=0;
+        int profit=0;
+        for(int i=1;i<prices.length;i++){
+            if(prices[i]<prices[min])
+                min=i;
+            else if(prices[i]>prices[min])
+                max=i;
+            if(max>min)
+                profit = Math.max(profit,prices[max]-prices[min]);
+            inorder[i] = profit;
+        }
+        min=prices.length-1;
+        max=prices.length-1;
+        profit=0;
+        for(int i=prices.length-2;i>=0;i--){
+            if(prices[i]<prices[max])
+                min=i;
+            else if(prices[i]>prices[max])
+                max=i;
+            if(max>min)
+                profit = Math.max(profit,prices[max]-prices[min]);
+            reverse[i] = profit;
+        }
+        int result = 0;
+        for(int i=0;i<inorder.length-1;i++){
+            result = Math.max(result,inorder[i]+reverse[i]);
+        }
+        return result;
+    }
+}
+
+————————
+Scramble String 
+注意：当store的东西只有有限种可能时比如26个字母或256个ascII码，我们可以用一个数组来替代hashmap，这样
+空间开支比较少
+
+public class Solution {
+    public boolean isScramble(String s1, String s2) {
+        if(s1.length()==0 || s2.length()==0 || s1.length()!=s2.length())
+            return false;
+        int[] store = new int[26];
+        for(int i=0;i<s1.length();i++){
+            store[s1.charAt(i)-'a']+=1;
+            store[s2.charAt(i)-'a']-=1;
+        }
+        for(int i=0;i<store.length;i++)
+            if(store[i]!=0)
+                return false;
+        if(s1.length()==1)
+            return true;
+        for(int i=1;i<s1.length();i++){
+            boolean result = isScramble(s1.substring(0,i),s2.substring(0,i))&&
+                isScramble(s1.substring(i,s1.length()),s2.substring(i,s2.length()));
+            result=result || (isScramble(s1.substring(0,i),s2.substring(s1.length()-i,s1.length()))&&
+                isScramble(s1.substring(i,s1.length()),s2.substring(0,s2.length()-i)));
+            if(result)
+                return true;
+        }
+        return false;
+    }
+}
+—————————
+Valid Palindrome
+不需要整理出一条新的list，只要跳过那些不合格的字符进行比较即可，扫描时间一遍过
+public class Solution {
+    public boolean isPalindrome(String s) {
+        if(s.length()==0)
+            return true;
+        String newStr=s.toLowerCase();
+        int start=0;
+        int end=newStr.length()-1;
+        while(start<=end){
+            if(!(newStr.charAt(start)>='a' && newStr.charAt(start)<='z')&&!(newStr.charAt(start)>='0' && newStr.charAt(start)<='9')){
+                start++;
+                continue;
+            }
+            if(!(newStr.charAt(end)>='a' && newStr.charAt(end)<='z')&&!(newStr.charAt(end)>='0' && newStr.charAt(end)<='9')){
+                end--;
+                continue;
+            }
+            if(newStr.charAt(start)!=newStr.charAt(end))
+                return false;
+            start++;
+            end--;
+        }
+        return true;
+    }
+}
+
 
 ————————
 zigZag Conversion
