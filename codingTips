@@ -1,9 +1,139 @@
+23280014907538  TEST ID
 
 *array list和linked list可以使用add(index,element)来将元素插入指定的位置且将其他元素往右平移
 
 pre-order 头左右
 in-order 左到右
 post-order 左右头
+
+————————
+Given an integer k (1&amp;lt;=k&amp;lt;=2000000000), find two prime   that sum up to it and return the lower number. If there are multiple solutions, always return the lowest prime. If there are no solutions, return -1. Examples: k=12 gives 5 (5 + 7 = 12) k=68 gives 7 (7 + 61 = 68) k=77 gives -1 
+注意检验质数的部分只需检验2到小于等于sqrt（既可以）
+int returnLowestPrime(int k)
+{
+int i=0;
+int j=k;
+
+while ( i<=j )
+{
+    while( i<=j )
+    {
+        if( isPrime(i) ) break; // i stopped at a prime;
+        else i++;
+    };
+
+    while ( i<=j )
+    {
+        if( isPrime(j) ) break; // j stopped at a prime.
+        else j--;
+    }
+
+    if( i<=j )
+    {
+        if( (i+j) > k)
+            j--;
+        else if( (i+j) < k)
+            i++;
+        else // i+j is k
+            return min(i,k);
+    }
+}
+
+    return -1;
+}
+
+bool isPrime(int x)
+{
+    for(int i=2; i<x; i++)
+    {
+        if(x%i==0) return false;
+    }
+    return true;
+}
+
+
+
+———————————
+Summing up the individual digits for each number from 0 to   k (0<=k<=10000000), return how many times the most common sum occurs. Examples: k=10 gives 2 (since 1 and 10 both sum up to 1) k=50 gives 6 (since 5, 14, 23, 32, 41, 50 all sum up to 5) k=7777 gives 555 
+注意：依旧是暴力解法，特别是sums其实只要63个slots就可以来，因为最大的和应该是9＋9+9+9+9+9+9+9
+private int mostCommonSum(int i) {
+
+        if ((i < 0) || (i > 10000000))
+            throw new IllegalArgumentException();
+
+        int[] sums = new int[i];
+
+        for (int j = 1; j <= i; j++) {
+            int index = sum(j);
+            sums[index]++;
+        }
+
+        int mostCommonSum = 0;
+
+        for (int k = 0; k < sums.length; k++) {
+            if (sums[k] > mostCommonSum) {
+                mostCommonSum = sums[k];
+            }
+
+        }
+
+        return mostCommonSum;
+    }
+
+    private int sum(int i) {
+
+        int sum = 0;
+        String integer = Integer.toString(i);
+
+        for (int j = 0; j + 1 <= integer.length(); j++) {
+            String individualInt = integer.substring(j, j+1);
+            sum += new Integer(individualInt);
+        }
+        return sum;
+    }
+
+—————————
+shortest substring that occurs only once in the string.
+Brute force的解法如下：
+private String shortestSubString(String string) {
+
+        String shortestSubString = null;
+
+        for (int length = 1; length <= string.length(); length++) {
+            for (int position = 0; position + length <= string.length(); position++) {
+                String subString = string.substring(position, position + length);
+
+                int occurences = checkNumberOfOccurences(string, subString);
+
+                if (occurences == 1)
+                    return subString;
+
+            }
+        }
+
+        return shortestSubString;
+    }
+
+    private int checkNumberOfOccurences(String string, String subString) {
+
+        int occurences = 0;
+        for (int position = 0; position + subString.length() <= string.length(); position++) {
+
+            String sub = string.substring(position, position + subString.length());
+
+            if (sub.equals(subString))
+                occurences++;
+        }
+
+        return occurences;
+    }
+
+—————
+4 Sum
+一般方法，两个for loop 一个表示第一个数，一个表示第二个数，剩下两个用two sum来做，用一个HashSet或
+HashMap来存储并检验重复抖解 时间复杂度为n3
+
+另一个方法是定义一个list<list<Integer>>，每个小list存的是一对pair位置坐标，定义一个hash map，里面存的key是这样的小list，value是里面的和，问题转换为two sum。先把大list按照map对应的value从小到大排序，然后一头一尾遍历，检验和是否为target且坐标位置是否重复，时间复杂度为n2
 ———————
 Longest Substring Without Repeating Characters
 注意handle最后一个元素的case
