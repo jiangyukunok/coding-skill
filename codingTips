@@ -5,6 +5,35 @@ pre-order 头左右
 in-order 左到右
 post-order 左右头
 
+——————————
+Find Minimum in Rotated Sorted Array 
+注意这道题可以使用quick select来求Kth num
+
+public class Solution {
+    public int findMin(int[] num) {
+        //O(logn) method not only the binary search, but also the quick select method!
+        if(num.length==0)
+            return 0;
+        int start = 0;
+        int end = num.length-1;
+        while(start<=end){
+            if(start==end)
+                return num[start];
+            int mid = (start+end)/2;
+            if(mid<end && num[mid+1]<num[mid])
+                return num[mid+1];
+            if(mid>start && num[mid-1]>num[mid])
+                return num[mid];
+            if(num[end]>num[mid])
+                end = mid-1;
+            else
+                start = mid+1;
+        }
+        //!!!!
+        return num[start];
+    }
+}
+
 —————————
 Given an array[0, n-1], each number of the array is positive int. Your task is adding the operators,"+","*", "(",")" (add, multiply, parenthesis) to maximize the result . The position in the array is Fixed. 
 For example, "2,1,1,2", you can get (2+1)*(2+1)=9. 
