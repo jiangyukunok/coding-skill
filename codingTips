@@ -5,6 +5,150 @@ pre-order 头左右
 in-order 左到右
 post-order 左右头
 
+
+—————————
+LRU Cache（使用了一个hashMap来使set和get的时间复杂度为1，使用了双向链表来使删除和插入节点时间
+复杂度为1，注意删除和插入时要考虑双向指针的赋值，以及head和end重合或为null的情况）
+
+class DoubleLinkList{
+    int value;
+    int key;
+    DoubleLinkList pre;
+    DoubleLinkList next;
+    public DoubleLinkList(int key, int value){
+        this.value = value;
+        this.key = key;
+    }
+}
+
+public class LRUCache {
+    private int capacity;
+    private DoubleLinkList head;
+    private DoubleLinkList end;
+    private int len;
+    private HashMap<Integer,DoubleLinkList> map = new HashMap<Integer,DoubleLinkList>();
+    
+    public LRUCache(int capacity) {
+        this.capacity = capacity;
+        len = 0;
+    }
+    
+    public int get(int key) {
+        if(map.containsKey(key)){
+            DoubleLinkList latest = map.get(key);
+            removeNode(latest);
+            setHead(latest);
+            return latest.value;
+        }
+        else
+            return -1;
+    }
+    
+    public void set(int key, int value) {
+        if(map.containsKey(key)){
+            DoubleLinkList old = map.get(key);
+            old.value = value;
+            removeNode(old);
+            setHead(old);
+        }
+        else{
+            DoubleLinkList newNode = new DoubleLinkList(key,value);
+            if(len<capacity){
+                map.put(key,newNode);
+                setHead(newNode);
+                len++;
+            }
+            else{
+                map.remove(end.key);
+                end = end.pre;
+                if(end!=null)
+                    end.next = null;
+                setHead(newNode);
+                map.put(key,newNode);
+            }
+        }
+    }
+    
+    public void removeNode(DoubleLinkList node){
+        if(node.pre==null){
+            head = node.next;
+            if(head!=null)
+                head.pre = null;
+            else
+                end = null;
+        }
+        else if(node.next==null){
+            end = node.pre;
+            if(end!=null)
+                end.next = null;
+            else
+                head = null;
+        }
+        else{
+            node.pre.next = node.next; 
+            node.next.pre = node.pre;
+        }
+    }
+    
+    public void setHead(DoubleLinkList node){
+        node.next = head;
+        if(head!=null)
+            head.pre = node;
+        head = node;
+        head.pre = null;
+        if(end == null)
+            end = head;
+    }
+    
+}
+
+
+
+
+——————————
+Find Minimum in Rotated Sorted Array (有重复，时间复杂度为n)
+
+public class Solution {
+    public int findMin(int[] num) {
+        if(num.length==0)
+            return 0;
+        if(num.length==1)
+            return num[0];
+        int start = 0;
+        int end = num.length-1;
+        while(start<=end){
+            int mid = (end-start)/2+start;//avoid overflow,should be safer
+            if(start==end)
+                return num[start];
+            if(mid<end && num[mid+1]<num[mid])
+                return num[mid+1];
+            if(mid>start && num[mid]<num[mid-1])
+                return num[mid];
+            if(num[end]>num[mid])
+                end = mid-1;
+            else if(num[end]==num[mid]){
+                while(num[start]>=num[end]){
+                    if(start==mid){
+                        while(num[mid]>=num[end]){
+                            if(mid==end)
+                                return num[mid];
+                            mid++;
+                        }
+                        return num[mid];
+                    }
+                    start++;
+                }
+                return num[start];
+            }
+            else
+                start = mid+1;
+        }
+        return num[start];
+    }
+}
+
+
+
 ——————————
 Find Minimum in Rotated Sorted Array 
 注意这道题可以使用quick select来求Kth num
