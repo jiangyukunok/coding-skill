@@ -4,6 +4,239 @@
 pre-order 头左右
 in-order 左到右
 post-order 左右头
+——————————————
+Longest Palindromic Substring
+dp写的复杂度为n2，brute force解法因为要单独检测isPalindrome，复杂度为n3
+
+public class Solution {
+    public String longestPalindrome(String s) {
+        if(s.length()<=1)
+            return s;
+        int start = -1;
+        int end = -1;
+        int len = Integer.MIN_VALUE;
+        boolean[][] dp = new boolean[s.length()][s.length()];
+        for(int i=s.length()-1;i>=0;i--)
+            for(int j=i;j<s.length();j++){
+                if(i==j){
+                    dp[i][j] = true;
+                    if(len<j-i+1){
+                        start = i;
+                        end = j;
+                        len = j-i+1;
+                    }
+                }
+                else{
+                    dp[i][j] = s.charAt(i)==s.charAt(j) && (j-i<=1 || dp[i+1][j-1]);
+                    if(dp[i][j] && len<j-i+1){
+                        start = i;
+                        end = j;
+                        len = j-i+1;
+                    }
+                }
+            }
+        return s.substring(start,end+1);
+    }
+}
+
+———————————————
+4Sum
+可以使用HashSet来储存arrayList作为solution，也可以使用while 递进来消除重复，注意while递进的加减
+及边界具有普遍性，因为取值范围已经在for loop中严格限定了
+
+注意！！ 使用HashSet时array list可以作为Key！！！只要里面装的值一样即可，可方便地查重
+public class Solution {
+    public List<List<Integer>> fourSum(int[] num, int target) {
+    Set<List<Integer>> hashSet = new HashSet<List<Integer>>();
+    List<List<Integer>> result = new ArrayList<List<Integer>>();
+    Arrays.sort(num);
+    for (int i = 0; i <= num.length-4; i++) {
+        for (int j = i + 1; j <= num.length-3; j++) {
+            int low = j + 1;
+            int high = num.length - 1;
+ 
+            while (low < high) {
+                int sum = num[i] + num[j] + num[low] + num[high];
+ 
+                if (sum > target) {
+                    high--;
+                } else if (sum < target) {
+                    low++;
+                } else if (sum == target) {
+                    List<Integer> temp = new ArrayList<Integer>();
+                    temp.add(num[i]);
+                    temp.add(num[j]);
+                    temp.add(num[low]);
+                    temp.add(num[high]);
+                    
+                    result.add(temp);
+                    //if (!hashSet.contains(temp)) {
+                    //    hashSet.add(temp);
+                    //    result.add(temp);
+                    //}
+                    low++;
+                    while(low<num.length-1 && num[low] == num[low-1])
+                        low++;
+                    high--;
+                    while(high>0 && num[high]==num[high+1])
+                        high--;
+                }
+            }
+            while(j<num.length-1 && num[j]==num[j+1])
+                j++;        
+        }
+        while(i<num.length-1 && num[i]==num[i+1])
+            i++;
+    }
+ 
+    return result;
+}
+}
+
+——————————————
+Substring with Concatenation of All Words
+两个map，一个统计数据并不变，一个可变并于固定map作对照
+public class Solution {
+    public List<Integer> findSubstring(String S, String[] L) {
+        // Note: The Solution object is instantiated only once and is reused by each test case.
+        List<Integer> res = new ArrayList<Integer>();
+        if(S==null || S.length()==0 || L==null || L.length==0)
+            return res;
+        HashMap<String,Integer> map = new HashMap<String,Integer>();
+        for(int i=0;i<L.length;i++)
+        {
+            if(map.containsKey(L[i]))
+            {
+                map.put(L[i],map.get(L[i])+1);
+            }
+            else
+            {
+                map.put(L[i],1);
+            }
+        }
+        for(int i=0;i<L[0].length();i++)
+        {
+            HashMap<String,Integer> curMap = new HashMap<String,Integer>();
+            int count = 0;
+            int left = i;
+            for(int j=i;j<=S.length()-L[0].length();j+=L[0].length())
+            {
+                String str = S.substring(j,j+L[0].length());
+                
+                if(map.containsKey(str))
+                {
+                    if(curMap.containsKey(str))
+                        curMap.put(str,curMap.get(str)+1);
+                    else
+                        curMap.put(str,1);
+                    if(curMap.get(str)<=map.get(str))
+                        count++;
+                    else
+                    {
+                        while(curMap.get(str)>map.get(str))
+                        {
+                            String temp = S.substring(left,left+L[0].length());
+                            if(curMap.containsKey(temp))
+                            {
+                                curMap.put(temp,curMap.get(temp)-1);
+                                if(curMap.get(temp)<map.get(temp))
+                                    count--;
+                            }
+                            left += L[0].length();
+                        }
+                    }
+                    if(count == L.length)
+                    {
+                        res.add(left);
+                        //if(left<)
+                        String temp = S.substring(left,left+L[0].length());
+                            curMap.put(temp,curMap.get(temp)-1);
+                        count--;
+                        left += L[0].length();
+                    }
+                }
+                else
+                {
+                    curMap.clear();
+                    count = 0;
+                    left = j+L[0].length();
+                }
+            }
+        }
+        return res;
+    }   
+}
+
+———————————
+Longest Valid Parenthesis
+public class Solution {
+    public int longestValidParentheses(String s) {
+        //use last to store the last matched index
+        int len = s.length(), maxLen = 0, last = -1;
+        if (len == 0 || len == 1)
+            return 0;
+    
+        //use this stack to store the index of '('
+        Stack<Integer> stack = new Stack<Integer>();
+        for (int i = 0; i < len; i++) {
+            if (s.charAt(i) == '(') 
+                stack.push(i);
+            else {
+                //if stack is empty, it means that we already found a complete valid combo
+                //update the last index.
+                if (stack.isEmpty()) {
+                    last = i;        
+                } else {
+                    stack.pop();
+                    //found a complete valid combo and calculate max length
+                    if (stack.isEmpty()) 
+                        maxLen = Math.max(maxLen, i - last);
+                    else
+                    //calculate current max length
+                        maxLen = Math.max(maxLen, i - stack.peek());
+                }
+            }
+        }
+    
+        return maxLen;
+    }
+}
+
+————————————
+Multiply Strings 
+一个非常优雅的写法：必须逐位求，否则会有误差（double型），注意StringBuilder的运用（可用reverse逆序）
+
+public class Solution {
+    public String multiply(String num1, String num2) {
+		// 先把string翻转
+		String n1 = new StringBuilder(num1).reverse().toString();
+		String n2 = new StringBuilder(num2).reverse().toString();
+		
+		int[] d = new int[n1.length()+n2.length()];		// 构建数组存放乘积
+		for(int i=0; i<n1.length(); i++){
+			for(int j=0; j<n2.length(); j++){
+				d[i+j] += (n1.charAt(i)-'0') * (n2.charAt(j)-'0');		// 在正确位置累加乘积
+			}
+		}
+		
+		StringBuilder sb = new StringBuilder();
+		for(int i=0; i<d.length; i++){
+			int digit = d[i]%10;		// 当前位
+			int carry = d[i]/10;		// 进位
+			if(i+1<d.length){
+				d[i+1] += carry;
+			}
+			sb.insert(0, digit);		// prepend
+		}
+		
+		// 移除前导零
+		while(sb.charAt(0)=='0' && sb.length()>1){
+			sb.deleteCharAt(0);
+		}
+		return sb.toString();
+	}
+}
+
 —————————
 Spiral Matrix (注意考虑中间的元素)
 row和col的长度不一样，但处理方法是一样的
