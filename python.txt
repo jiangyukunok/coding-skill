@@ -1,0 +1,32 @@
+字符串逆序
+“”.join(reversed(“123”))  
+or
+“123”[::-1]
+
+—————————
+
+in place reverse words in a sentence
+Reverse the entire string, then reverse the letters of each individual word.
+
+————
+
+Whitespace on the both sides:
+
+s = "  \t a string example\t  "
+s = s.strip()
+Whitespace on the right side:
+
+s = s.rstrip()
+Whitespace on the left side:
+
+s = s.lstrip()
+
+———
+
+#regular expression to split string
+import re
+DATA = "Hey, you - what are you doing here!?"
+print re.findall(r"[\w']+", DATA)
+
+—————
+
